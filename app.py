@@ -150,7 +150,12 @@ def soup_to_df(soup):
     dic = {}
     for i, foa in enumerate(foa_objs):
         ch = foa.findChildren()
-        dic[i] = {fd.name.split('ns0:')[1]: fd.text for fd in ch}
+        dic[i] = {}
+        for fd in ch:
+            if fd.name.split('ns0:')[1] in dic[i].keys():
+                dic[i][fd.name.split('ns0:')[1]] += ',' + fd.text
+            else:
+                dic[i][fd.name.split('ns0:')[1]] = fd.text
 
     # create dataframe from dictionary
     df = pd.DataFrame.from_dict(dic, orient='index')
@@ -192,7 +197,7 @@ def sort_by_recent_updates(df):
     new_dates = [reformat_date(i) for i in df['lastupdateddate']]
     df.insert(1, 'updatedate', new_dates)
     df = df.sort_values(by=['updatedate'], ascending=False)
-    print('Databae sorted and filtered by date')
+    print('Database sorted and filtered by date')
     return df
 
 from nltk.corpus import wordnet as wn
@@ -231,6 +236,20 @@ def filter_by_keywords(df):
 
     return df
 
+
+def filter_by_eligibility(df):
+    for_profit = 22
+    small_business = 23
+    unrestricted = 99
+
+    search_categories = str(for_profit) + '|' + str(small_business) + '|' + str(unrestricted)
+
+    df = df[df['eligibleapplicants'].str.contains(search_categories, na=False)]
+
+    print('Database filtered by eligibility')
+    
+    return df
+
 # include only recently updated FOAs
 df = dff[[is_recent(i) for i in dff['lastupdateddate']]]
 
@@ -242,6 +261,9 @@ df = sort_by_recent_updates(df)
 
 # filter by keywords
 df = filter_by_keywords(df)
+
+# filter by eligibility
+df = filter_by_eligibility(df)
 
 
 # %%%%%%%%%%%%%%% format string message for Slack %%%%%%%%%%%%%%%%%%%%%%
