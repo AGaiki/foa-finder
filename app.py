@@ -241,8 +241,9 @@ def filter_by_eligibility(df):
     for_profit = 22
     small_business = 23
     unrestricted = 99
+    others = 25
 
-    search_categories = str(for_profit) + '|' + str(small_business) + '|' + str(unrestricted)
+    search_categories = str(for_profit) + '|' + str(small_business) + '|' + str(unrestricted) + '|' + str(others)
 
     df = df[df['eligibleapplicants'].str.contains(search_categories, na=False)]
 
