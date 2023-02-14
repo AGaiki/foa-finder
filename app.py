@@ -241,9 +241,9 @@ def filter_by_eligibility(df):
     for_profit = 22
     small_business = 23
     unrestricted = 99
-    others = 25
+    #others = 25
 
-    search_categories1 = str(for_profit) + '|' + str(small_business) + '|' + str(unrestricted) + '|' + str(others)
+    search_categories1 = str(for_profit) + '|' + str(small_business) + '|' + str(unrestricted) # + '|' + str(others)
 
     df = df[df['eligibleapplicants'].str.contains(search_categories1, na=False)]
 
@@ -281,6 +281,9 @@ df = filter_by_keywords(df)
 
 # filter by eligibility
 df = filter_by_eligibility(df)
+
+# filter by category
+df = filter_by_category(df)
 
 
 # %%%%%%%%%%%%%%% format string message for Slack %%%%%%%%%%%%%%%%%%%%%%
