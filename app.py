@@ -243,13 +243,29 @@ def filter_by_eligibility(df):
     unrestricted = 99
     others = 25
 
-    search_categories = str(for_profit) + '|' + str(small_business) + '|' + str(unrestricted) + '|' + str(others)
+    search_categories1 = str(for_profit) + '|' + str(small_business) + '|' + str(unrestricted) + '|' + str(others)
 
-    df = df[df['eligibleapplicants'].str.contains(search_categories, na=False)]
+    df = df[df['eligibleapplicants'].str.contains(search_categories1, na=False)]
 
     print('Database filtered by eligibility')
     
     return df
+
+def filter_by_category(df):
+    energy = 'EN'
+    transportation = 'T'
+    agriculture = 'AG'
+    business_and_commerce = 'BC'
+    
+    search_categories2 = energy + '|' + transportation + '|' + agriculture + '|' + business_and_commerce
+    
+    df = df[df['categoryoffundingactivity'].str.contains(search_categories2, na=False)]
+    
+    print('Database filtered by funding category')
+    
+    return df
+    
+    
 
 # include only recently updated FOAs
 df = dff[[is_recent(i) for i in dff['lastupdateddate']]]
