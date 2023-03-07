@@ -370,7 +370,7 @@ def send_to_slack(slack_text):
     print('Sending results to slack')
     try:
         response = requests.post(
-            "https://hooks.slack.com/services/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",
+            #insert hook here,
             data=json.dumps({'text': slack_text}),
             headers={'Content-Type': 'application/json'})
         print('Slack response: ' + str(response.text))
