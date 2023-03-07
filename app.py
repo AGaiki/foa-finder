@@ -30,6 +30,7 @@ import time
 import zipfile
 import requests
 import pandas as pd
+import numpy as np
 from datetime import datetime, timedelta
 import xml.etree.ElementTree as ET
 from bs4 import BeautifulSoup
@@ -173,7 +174,7 @@ def to_date(date_str):
     return datetime.strptime(date_str, '%m%d%Y').date()
 
 
-def is_recent(date, days=14):
+def is_recent(date, days=90):
     """Check if date occured within n amount of days from today"""
     return (datetime.today().date() - to_date(date)).days <= days
 
@@ -221,7 +222,9 @@ def filter_by_keywords(df):
 
     keywords_str += '|' + '|'.join(hypernyms_set)
 
-    keywords_str.replace('_', ' ')
+    keywords_str = keywords_str.replace('_', ' ')
+
+    print(keywords_str)
     # get non-keywords to avoid
 
     # filter by post date - the current year and previous year only
@@ -265,7 +268,33 @@ def filter_by_category(df):
     
     return df
     
+def filter_by_relevance(df):
+    relevance = list(np.zeros(len(df)))
     
+    keywords = list(pd.read_csv('keywords testing.csv', header=None)[0])
+
+    hypernyms_set = set()
+
+    for i in keywords:
+        if len(wn.synsets(i.lower())) == 0:
+            continue
+        hypernyms = wn.synsets(i.lower())[0].hypernyms()
+        for j in hypernyms:
+            hypernyms_set.add(j.lemma_names()[0].replace('_', ' '))
+
+    # filter dataframe by keywords
+    for key in set(keywords).union(hypernyms_set):
+        contains = list(df['description'].str.contains(key, na=False))
+        for i in range(len(contains)):
+            if contains[i]:
+                relevance[i] += 1
+
+    df['relevance'] = relevance
+    df = df.sort_values(by=['relevance'], ascending=False)
+
+    print('Database filtered by relevance')
+
+    return df
 
 # include only recently updated FOAs
 df = dff[[is_recent(i) for i in dff['lastupdateddate']]]
@@ -285,6 +314,8 @@ df = filter_by_eligibility(df)
 # filter by category
 df = filter_by_category(df)
 
+# filter by relevance
+df = filter_by_relevance(df)
 
 # %%%%%%%%%%%%%%% format string message for Slack %%%%%%%%%%%%%%%%%%%%%%
 
@@ -339,7 +370,7 @@ def send_to_slack(slack_text):
     print('Sending results to slack')
     try:
         response = requests.post(
-            "#insert-url-here",
+            "https://hooks.slack.com/services/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",
             data=json.dumps({'text': slack_text}),
             headers={'Content-Type': 'application/json'})
         print('Slack response: ' + str(response.text))
